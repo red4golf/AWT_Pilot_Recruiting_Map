@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Angels Wings Transport — Pilot Recruitment Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+
+  <style>
+    :root {
+      --sky:       #0b1f3a;
+      --sky-mid:   #122d54;
+      --horizon:   #1a4475;
+      --cloud:     #e8f0fa;
+      --cloud-dim: #a8bcd8;
+      --gold:      #f0b429;
+      --gold-dim:  #b8891f;
+      --red:       #e63946;
+      --green:     #2ecc71;
+      --teal:      #48cae4;
+      --white:     #ffffff;
+      --panel-bg:  rgba(11, 31, 58, 0.97);
+      --card-bg:   rgba(18, 45, 84, 0.9);
+      --border:    rgba(240, 180, 41, 0.25);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--sky);
+      color: var(--cloud);
+      overflow: hidden;
+    }
+
+    /* ─── LAYOUT ─────────────────────────────────────────── */
+    #app {
+      display: grid;
+      grid-template-rows: 64px 1fr;
+      grid-template-columns: 340px 1fr;
+      height: 100vh;
+    }
+
+    /* ─── HEADER ─────────────────────────────────────────── */
+    header {
+      grid-column: 1 / -1;
+      background: var(--sky);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1000;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo-wing {
+      width: 38px;
+      height: 38px;
+      animation: soar 6s ease-in-out infinite;
+    }
+
+    @keyframes soar {
+      0%, 100% { transform: translateY(0) rotate(-2deg); }
+      50%       { transform: translateY(-4px) rotate(2deg); }
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      line-height: 1;
+    }
+
+    .brand-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 2px;
+      color: var(--white);
+    }
+
+    .brand-sub {
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-top: 2px;
+    }
+
+    .header-stats {
+      display: flex;
+      gap: 32px;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .stat-value {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 24px;
+      color: var(--gold);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--cloud-dim);
+    }
+
+    .header-link {
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-decoration: none;
+      border: 1px solid var(--gold-dim);
+      padding: 6px 14px;
+      border-radius: 2px;
+      transition: all 0.2s;
+    }
+
+    .header-link:hover {
+      background: var(--gold);
+      color: var(--sky);
+    }
+
+    /* ─── SIDEBAR ─────────────────────────────────────────── */
+    #sidebar {
+      background: var(--panel-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      z-index: 500;
+    }
+
+    .sidebar-header {
+      padding: 20px 20px 14px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .sidebar-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 15px;
+      letter-spacing: 3px;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    /* Filter tabs */
+    .filters {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 5px 10px;
+      border-radius: 2px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--cloud-dim);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .filter-btn:hover { color: var(--white); border-color: var(--cloud-dim); }
+    .filter-btn.active { background: var(--gold); color: var(--sky); border-color: var(--gold); font-weight: 600; }
+    .filter-btn.active.i5  { background: var(--teal); border-color: var(--teal); }
+    .filter-btn.active.i90 { background: #a78bfa; border-color: #a78bfa; }
+
+    /* Airport list */
+    #airport-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 0;
+    }
+
+    #airport-list::-webkit-scrollbar { width: 4px; }
+    #airport-list::-webkit-scrollbar-track { background: transparent; }
+    #airport-list::-webkit-scrollbar-thumb { background: var(--horizon); border-radius: 2px; }
+
+    .list-section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--cloud-dim);
+      padding: 12px 20px 4px;
+    }
+
+    .airport-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: background 0.15s;
+      border-left: 3px solid transparent;
+    }
+
+    .airport-item:hover { background: rgba(255,255,255,0.04); }
+    .airport-item.active { background: rgba(240,180,41,0.08); border-left-color: var(--gold); }
+    .airport-item.hidden { display: none; }
+
+    .priority-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .dot-top    { background: var(--red); box-shadow: 0 0 6px var(--red); }
+    .dot-high   { background: var(--gold); }
+    .dot-medium { background: var(--teal); }
+    .dot-home   { background: var(--green); box-shadow: 0 0 6px var(--green); }
+
+    .item-info { flex: 1; min-width: 0; }
+
+    .item-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--white);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .item-loc {
+      font-size: 11px;
+      color: var(--cloud-dim);
+      margin-top: 1px;
+    }
+
+    .item-badge {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+      padding: 2px 6px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .badge-top    { background: rgba(230,57,70,0.2); color: var(--red); border: 1px solid rgba(230,57,70,0.4); }
+    .badge-high   { background: rgba(240,180,41,0.15); color: var(--gold); border: 1px solid rgba(240,180,41,0.3); }
+    .badge-medium { background: rgba(72,202,228,0.12); color: var(--teal); border: 1px solid rgba(72,202,228,0.25); }
+    .badge-home   { background: rgba(46,204,113,0.15); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
+
+    /* Legend */
+    .legend {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: var(--cloud-dim);
+    }
+
+    /* ─── MAP ─────────────────────────────────────────────── */
+    #map {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Leaflet overrides */
+    .leaflet-container { background: #0a1a30; font-family: 'DM Sans', sans-serif; }
+    .leaflet-popup-content-wrapper {
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      backdrop-filter: blur(12px);
+      color: var(--cloud);
+      max-width: 280px;
+    }
+    .leaflet-popup-tip { background: var(--panel-bg); }
+    .leaflet-popup-close-button { color: var(--cloud-dim) !important; font-size: 16px !important; }
+    .leaflet-popup-close-button:hover { color: var(--white) !important; }
+
+    /* Custom popup content */
+    .popup-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .popup-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 1px;
+      color: var(--white);
+      line-height: 1.1;
+    }
+
+    .popup-id {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px;
+      color: var(--gold);
+      background: rgba(240,180,41,0.12);
+      border: 1px solid rgba(240,180,41,0.3);
+      padding: 2px 7px;
+      border-radius: 2px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .popup-loc {
+      font-size: 11px;
+      color: var(--cloud-dim);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .popup-priority {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 2px;
+      margin-bottom: 10px;
+    }
+
+    .popup-notes {
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--cloud-dim);
+      border-top: 1px solid var(--border);
+      padding-top: 10px;
+    }
+
+    .popup-corridor {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+
+    .cor-i5  { color: var(--teal); }
+    .cor-i90 { color: #a78bfa; }
+    .cor-both { color: var(--gold); }
+
+    /* Custom markers */
+    .marker-pin {
+      width: 32px;
+      height: 32px;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      border: 2px solid rgba(255,255,255,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.5);
+      transition: transform 0.2s;
+    }
+
+    .marker-inner {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.9);
+      transform: rotate(45deg);
+    }
+
+    .marker-top    { background: var(--red); }
+    .marker-high   { background: var(--gold); }
+    .marker-medium { background: var(--teal); }
+    .marker-home   { background: var(--green); }
+
+    /* ─── INFO PANEL (bottom right) ──────────────────────── */
+    #info-panel {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      z-index: 900;
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 16px 20px;
+      max-width: 260px;
+      backdrop-filter: blur(12px);
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    #info-panel.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .info-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 13px;
+      letter-spacing: 3px;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      gap: 12px;
+    }
+
+    .info-row:last-child { border-bottom: none; }
+    .info-key { color: var(--cloud-dim); }
+    .info-val { color: var(--white); font-weight: 600; text-align: right; }
+
+    /* ─── ABOUT PANEL ─────────────────────────────────────── */
+    #about-panel {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 900;
+      background: var(--panel-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 14px 18px;
+      max-width: 240px;
+      backdrop-filter: blur(12px);
+      font-size: 11px;
+      line-height: 1.6;
+      color: var(--cloud-dim);
+    }
+
+    #about-panel strong { color: var(--white); }
+    #about-panel a { color: var(--gold); text-decoration: none; }
+    #about-panel a:hover { text-decoration: underline; }
+
+    .about-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 13px;
+      letter-spacing: 3px;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+
+    /* ─── RESPONSIVE ──────────────────────────────────────── */
+    @media (max-width: 768px) {
+      #app {
+        grid-template-rows: 56px 1fr;
+        grid-template-columns: 1fr;
+      }
+
+      #sidebar {
+        display: none;
+      }
+
+      .header-stats { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <svg class="logo-wing" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M4 22 C8 10, 20 6, 34 14 L20 18 Z" fill="#f0b429" opacity="0.9"/>
+        <path d="M4 22 C10 24, 16 26, 20 18 L14 28 Z" fill="#f0b429" opacity="0.6"/>
+        <circle cx="6" cy="23" r="2" fill="#f0b429"/>
+      </svg>
+      <div class="brand">
+        <span class="brand-name">Angels Wings Transport</span>
+        <span class="brand-sub">Pilot Recruitment Map</span>
+      </div>
+    </div>
+    <div class="header-stats">
+      <div class="stat">
+        <span class="stat-value" id="stat-total">20</span>
+        <span class="stat-label">Airports</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value" id="stat-top">4</span>
+        <span class="stat-label">Top Priority</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">5</span>
+        <span class="stat-label">States</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">1,400<span style="font-size:14px">mi</span></span>
+        <span class="stat-label">Coverage</span>
+      </div>
+    </div>
+    <a href="https://awtrescue.org/Info_For_Pilots_-_Angels_Wings_Transport.html" target="_blank" class="header-link">✈ Become a Pilot</a>
+  </header>
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">Airport Directory</div>
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn i5" data-filter="i5">I-5 Corridor</button>
+        <button class="filter-btn i90" data-filter="i90">I-90 / East</button>
+        <button class="filter-btn" data-filter="top">Top Priority</button>
+      </div>
+    </div>
+
+    <div id="airport-list"></div>
+
+    <div class="legend">
+      <div class="legend-item"><span class="priority-dot dot-top"></span> Top Priority</div>
+      <div class="legend-item"><span class="priority-dot dot-high"></span> High</div>
+      <div class="legend-item"><span class="priority-dot dot-medium"></span> Medium</div>
+      <div class="legend-item"><span class="priority-dot dot-home"></span> Home Base</div>
+    </div>
+  </aside>
+
+  <!-- MAP -->
+  <div id="map"></div>
+
+</div>
+
+<!-- INFO PANEL -->
+<div id="info-panel">
+  <div class="info-title">Selected Airport</div>
+  <div id="info-content"></div>
+</div>
+
+<!-- ABOUT PANEL -->
+<div id="about-panel">
+  <div class="about-title">About AWT</div>
+  <strong>Angels Wings Transport</strong> provides free flights for military members, veterans, wounded warriors, medical patients, and animal rescues across WA, OR, CA, ID, and MT.<br/><br/>
+  This map shows GA airports along the I-5 and I-90 corridors targeted for pilot volunteer recruitment.<br/><br/>
+  <a href="https://awtrescue.org" target="_blank">awtrescue.org</a>
+</div>
+
+<script>
+function loadScript(src, onload) {
+  const s = document.createElement('script');
+  s.src = src;
+  s.onload = onload;
+  s.onerror = () => {
+    const s2 = document.createElement('script');
+    s2.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+    s2.onload = onload;
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s);
+}
+
+loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', initApp);
+
+function initApp() {
+// ─── DATA ────────────────────────────────────────────────────────────────────
+const airports = [
+  // I-5 CORRIDOR
+  { id:"BLI", name:"Bellingham International", loc:"Bellingham, WA", lat:48.7956, lng:-122.5331, priority:"high",   corridor:"i5",  eaa:"EAA Ch. 314",  notes:"I-5 northern anchor. Active pilot community close to Canadian border. EAA Chapter 314 meets here." },
+  { id:"PAE", name:"Paine Field",               loc:"Everett, WA",    lat:47.9081, lng:-122.2814, priority:"top",    corridor:"i5",  eaa:"EAA Ch. 189",  notes:"Largest GA hub in Washington. Multiple flight schools, EAA Chapter 189. Highest pilot density on the I-5 corridor." },
+  { id:"BFI", name:"Boeing Field",              loc:"Seattle, WA",    lat:47.5369, lng:-122.3039, priority:"high",   corridor:"i5",  eaa:"Museum of Flight", notes:"Seattle's primary GA airport. Museum of Flight on-site — excellent venue for outreach events and pilot community." },
+  { id:"RNT", name:"Renton Municipal",          loc:"Renton, WA",     lat:47.4856, lng:-122.2166, priority:"home",   corridor:"i5",  eaa:"AWT Home Base",  notes:"AWT home base. Already well-networked here. Boeing 737 production facility adjacent." },
+  { id:"OLM", name:"Olympia Regional",          loc:"Tumwater, WA",   lat:46.9747, lng:-122.8975, priority:"medium", corridor:"i5",  eaa:"Active airshow community", notes:"I-5 mid-Washington. Active airshow community. Covers mission gap between Seattle and Portland." },
+  { id:"CLS", name:"Chehalis-Centralia",        loc:"Chehalis, WA",   lat:46.6689, lng:-122.9841, priority:"medium", corridor:"i5",  eaa:"Young Eagles program", notes:"I-5 gap-filler between Olympia and Kelso. Young Eagles program suggests a receptive, community-minded pilot base." },
+  { id:"KLS", name:"SW Washington Regional",    loc:"Kelso, WA",      lat:46.1185, lng:-122.8964, priority:"medium", corridor:"i5",  eaa:"Civil Air Patrol",  notes:"I-5 south Washington. Civil Air Patrol presence on field. Covers the WA/OR border corridor effectively." },
+  { id:"VUO", name:"Pearson Field",             loc:"Vancouver, WA",  lat:45.6223, lng:-122.6559, priority:"high",   corridor:"i5",  eaa:"EAA Ch. 105",  notes:"Historic GA field, Portland metro north. Very active pilot lounge. EAA Chapter 105 meets nearby — strong recruitment target." },
+  { id:"HIO", name:"Hillsboro Airport",         loc:"Hillsboro, OR",  lat:45.5329, lng:-122.9480, priority:"top",    corridor:"i5",  eaa:"Hillsboro Aero Academy", notes:"Busiest GA airport in Oregon. Hillsboro Aero Academy produces hundreds of new pilots annually. Top Oregon priority." },
+  { id:"SLE", name:"Salem McNary Field",        loc:"Salem, OR",      lat:44.9093, lng:-123.0027, priority:"medium", corridor:"i5",  eaa:"Army National Guard",  notes:"I-5 mid-Oregon. Army National Guard presence. Active GA community covers the Salem–Eugene gap." },
+  { id:"EUG", name:"Mahlon Sweet Field",        loc:"Eugene, OR",     lat:44.1218, lng:-123.2159, priority:"high",   corridor:"i5",  eaa:"EAA Ch. 31 (Creswell)", notes:"I-5 southern Oregon anchor. University town with active pilot community. EAA Chapter 31 meets nearby at Creswell (77S)." },
+  { id:"RBG", name:"Roseburg Regional",         loc:"Roseburg, OR",   lat:43.2364, lng:-123.3580, priority:"medium", corridor:"i5",  eaa:"Flight school on field", notes:"Fills 100-mile I-5 gap between Eugene and Medford. Flight school on field makes this a practical recruitment stop." },
+  { id:"MFR", name:"Rogue Valley International",loc:"Medford, OR",    lat:42.3745, lng:-122.8739, priority:"high",   corridor:"i5",  eaa:"Active EAA chapter",  notes:"I-5 southern Oregon. Gateway to northern California. Active EAA chapter. Critical for OR/CA border missions." },
+  { id:"RDD", name:"Redding Regional",          loc:"Redding, CA",    lat:40.5058, lng:-122.2997, priority:"medium", corridor:"i5",  eaa:"Northern CA anchor",  notes:"I-5 California southern boundary of AWT service area. Pilots here cover northern California border missions." },
+
+  // I-90 / EASTERN
+  { id:"SFF", name:"Felts Field",               loc:"Spokane, WA",    lat:47.6806, lng:-117.3198, priority:"top",    corridor:"i90", eaa:"Very active EAA chapter", notes:"I-90 eastern anchor. Primary GA field for Spokane area. Very active EAA chapter. Critical hub for all eastern WA missions." },
+  { id:"YKM", name:"Yakima Air Terminal",       loc:"Yakima, WA",     lat:46.5675, lng:-120.5392, priority:"medium", corridor:"i90", eaa:"Agricultural interior",  notes:"I-82/I-90 junction. Covers agricultural interior and links east-west missions across the Cascades." },
+  { id:"ALW", name:"Walla Walla Regional",      loc:"Walla Walla, WA",lat:46.0873, lng:-118.2845, priority:"medium", corridor:"i90", eaa:"Eastern WA rural coverage", notes:"I-82 eastern Washington. Large rural coverage area. Ideal for eastern WA veteran transport missions." },
+  { id:"PDT", name:"Pendleton Airport",         loc:"Pendleton, OR",  lat:45.6895, lng:-118.8394, priority:"medium", corridor:"i90", eaa:"Eastern OR / links WA–ID", notes:"I-84 eastern Oregon. Links Washington and Idaho corridors. Underserved area with strong veteran mission potential." },
+  { id:"BOI", name:"Boise Airport",             loc:"Boise, ID",      lat:43.5609, lng:-116.2175, priority:"top",    corridor:"i90", eaa:"EAA Ch. 517",  notes:"I-84 Idaho anchor. Large GA community. EAA Chapter 517 is active. Eastern boundary of AWT service area." },
+  { id:"MSO", name:"Missoula Airport",          loc:"Missoula, MT",   lat:46.9188, lng:-114.0836, priority:"high",   corridor:"i90", eaa:"University of Montana aviation culture", notes:"Montana anchor. University of Montana town with active outdoors and aviation culture. Northern Montana boundary for AWT." },
+];
+
+// ─── PRIORITY CONFIG ─────────────────────────────────────────────────────────
+const priorityConfig = {
+  top:    { label: "TOP PRIORITY", color: "#e63946", dotClass: "dot-top",    badgeClass: "badge-top",    markerClass: "marker-top"    },
+  high:   { label: "HIGH",         color: "#f0b429", dotClass: "dot-high",   badgeClass: "badge-high",   markerClass: "marker-high"   },
+  medium: { label: "MEDIUM",       color: "#48cae4", dotClass: "dot-medium", badgeClass: "badge-medium", markerClass: "marker-medium" },
+  home:   { label: "HOME BASE",    color: "#2ecc71", dotClass: "dot-home",   badgeClass: "badge-home",   markerClass: "marker-home"   },
+};
+
+// ─── MAP INIT ────────────────────────────────────────────────────────────────
+const map = L.map('map', {
+  center: [46.0, -119.5],
+  zoom: 6,
+  zoomControl: false,
+  attributionControl: true,
+});
+
+L.control.zoom({ position: 'bottomleft' }).addTo(map);
+
+// Primary: CartoDB dark. Fallback: OSM standard.
+const cartoDark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+  subdomains: 'abcd',
+  maxZoom: 19,
+  crossOrigin: true,
+});
+
+cartoDark.addTo(map);
+
+// Monitor first tile — if it errors, switch to OSM
+cartoDark.on('tileerror', function() {
+  if (map.hasLayer(cartoDark)) {
+    map.removeLayer(cartoDark);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19,
+    }).addTo(map);
+    // Adjust map background to lighter theme if OSM loads
+    document.querySelector('.leaflet-container').style.background = '#1a2535';
+  }
+});
+
+// ─── DRAW I-5 AND I-90 CORRIDOR LINES ────────────────────────────────────────
+const i5Coords = airports.filter(a => a.corridor === 'i5').sort((a,b) => b.lat - a.lat).map(a => [a.lat, a.lng]);
+const i90Coords = airports.filter(a => a.corridor === 'i90').sort((a,b) => a.lng - b.lng).map(a => [a.lat, a.lng]);
+
+L.polyline(i5Coords,  { color: '#48cae4', weight: 1.5, opacity: 0.3, dashArray: '6 8' }).addTo(map);
+L.polyline(i90Coords, { color: '#a78bfa', weight: 1.5, opacity: 0.3, dashArray: '6 8' }).addTo(map);
+
+// ─── MARKERS ─────────────────────────────────────────────────────────────────
+const markerMap = {};
+let activeItem = null;
+
+function createIcon(priority) {
+  const cfg = priorityConfig[priority];
+  return L.divIcon({
+    className: '',
+    html: `<div class="marker-pin ${cfg.markerClass}"><div class="marker-inner"></div></div>`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -34],
+  });
+}
+
+function corridorLabel(corridor) {
+  if (corridor === 'i5')  return '<span class="cor-i5">▲ I-5 Corridor</span>';
+  if (corridor === 'i90') return '<span class="cor-i90">▶ I-90 / Eastern</span>';
+  return '<span class="cor-both">◆ Both Corridors</span>';
+}
+
+airports.forEach(a => {
+  const cfg = priorityConfig[a.priority];
+  const marker = L.marker([a.lat, a.lng], { icon: createIcon(a.priority) });
+
+  const popupHTML = `
+    <div class="popup-header">
+      <div class="popup-name">${a.name}</div>
+      <div class="popup-id">${a.id}</div>
+    </div>
+    <div class="popup-loc">📍 ${a.loc}</div>
+    <div class="popup-priority ${cfg.badgeClass}">${cfg.label}</div>
+    <div class="popup-notes">${a.notes}</div>
+    <div class="popup-corridor">${corridorLabel(a.corridor)} &nbsp;·&nbsp; ${a.eaa}</div>
+  `;
+
+  marker.bindPopup(popupHTML, { maxWidth: 280 });
+
+  marker.on('click', () => {
+    selectAirport(a.id);
+    showInfoPanel(a);
+  });
+
+  marker.addTo(map);
+  markerMap[a.id] = marker;
+});
+
+// ─── SIDEBAR LIST ─────────────────────────────────────────────────────────────
+const listEl = document.getElementById('airport-list');
+
+function buildList() {
+  listEl.innerHTML = '';
+
+  const i5Section = document.createElement('div');
+  i5Section.innerHTML = '<div class="list-section-label">I-5 Corridor</div>';
+  const i90Section = document.createElement('div');
+  i90Section.innerHTML = '<div class="list-section-label">I-90 / Eastern</div>';
+
+  airports.forEach(a => {
+    const cfg = priorityConfig[a.priority];
+    const el = document.createElement('div');
+    el.className = 'airport-item';
+    el.dataset.id = a.id;
+    el.dataset.corridor = a.corridor;
+    el.dataset.priority = a.priority;
+    el.innerHTML = `
+      <span class="priority-dot ${cfg.dotClass}"></span>
+      <div class="item-info">
+        <div class="item-name">${a.name} (${a.id})</div>
+        <div class="item-loc">${a.loc}</div>
+      </div>
+      <span class="item-badge ${cfg.badgeClass}">${cfg.label}</span>
+    `;
+    el.addEventListener('click', () => {
+      map.setView([a.lat, a.lng], 10, { animate: true });
+      markerMap[a.id].openPopup();
+      selectAirport(a.id);
+      showInfoPanel(a);
+    });
+    if (a.corridor === 'i5') i5Section.appendChild(el);
+    else i90Section.appendChild(el);
+  });
+
+  listEl.appendChild(i5Section);
+  listEl.appendChild(i90Section);
+}
+
+buildList();
+
+// ─── SELECT / HIGHLIGHT ───────────────────────────────────────────────────────
+function selectAirport(id) {
+  document.querySelectorAll('.airport-item').forEach(el => el.classList.remove('active'));
+  const el = document.querySelector(`.airport-item[data-id="${id}"]`);
+  if (el) {
+    el.classList.add('active');
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  activeItem = id;
+}
+
+// ─── INFO PANEL ───────────────────────────────────────────────────────────────
+function showInfoPanel(a) {
+  const cfg = priorityConfig[a.priority];
+  const panel = document.getElementById('info-panel');
+  document.getElementById('info-content').innerHTML = `
+    <div class="info-row"><span class="info-key">Airport</span><span class="info-val">${a.name}</span></div>
+    <div class="info-row"><span class="info-key">Identifier</span><span class="info-val">${a.id}</span></div>
+    <div class="info-row"><span class="info-key">Location</span><span class="info-val">${a.loc}</span></div>
+    <div class="info-row"><span class="info-key">Priority</span><span class="info-val" style="color:${cfg.color}">${cfg.label}</span></div>
+    <div class="info-row"><span class="info-key">Corridor</span><span class="info-val">${a.corridor.toUpperCase()}</span></div>
+    <div class="info-row"><span class="info-key">Community</span><span class="info-val">${a.eaa}</span></div>
+  `;
+  panel.classList.add('visible');
+}
+
+// ─── FILTERS ──────────────────────────────────────────────────────────────────
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const filter = btn.dataset.filter;
+    let visibleCount = 0;
+
+    document.querySelectorAll('.airport-item').forEach(el => {
+      let show = false;
+      if (filter === 'all')  show = true;
+      else if (filter === 'i5')  show = el.dataset.corridor === 'i5';
+      else if (filter === 'i90') show = el.dataset.corridor === 'i90';
+      else if (filter === 'top') show = el.dataset.priority === 'top';
+
+      el.classList.toggle('hidden', !show);
+      if (show) visibleCount++;
+
+      // Show/hide markers
+      const marker = markerMap[el.dataset.id];
+      if (show) {
+        if (!map.hasLayer(marker)) map.addLayer(marker);
+      } else {
+        if (map.hasLayer(marker)) map.removeLayer(marker);
+      }
+    });
+
+    document.getElementById('stat-total').textContent = visibleCount;
+
+    // Hide section labels if all items in section are hidden
+    document.querySelectorAll('.list-section-label').forEach(label => {
+      const section = label.parentElement;
+      const visibleItems = section.querySelectorAll('.airport-item:not(.hidden)');
+      label.style.display = visibleItems.length === 0 ? 'none' : '';
+    });
+  });
+});
+
+// ─── CLOSE INFO PANEL ON MAP CLICK ───────────────────────────────────────────
+map.on('click', () => {
+  document.getElementById('info-panel').classList.remove('visible');
+  document.querySelectorAll('.airport-item').forEach(el => el.classList.remove('active'));
+});
+
+} // end initApp
+</script>
+</body>
+</html>
