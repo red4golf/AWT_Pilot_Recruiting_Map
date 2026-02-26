@@ -587,7 +587,7 @@
   <div id="map">
     <div id="map-toggle">
       <button class="toggle-btn active" data-style="dark">🌙 Dark</button>
-      <button class="toggle-btn" data-style="sectional">✈ Sectional</button>
+      <button class="toggle-btn" data-style="sectional">🏔 Topo</button>
       <button class="toggle-btn" data-style="satellite">🛰 Satellite</button>
     </div>
   </div>
@@ -676,9 +676,10 @@ const tileLayers = {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
     subdomains: 'abcd', maxZoom: 19,
   }),
-  sectional: L.tileLayer('https://wms.chartbundle.com/tms/1.0.0/sec/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://chartbundle.com">ChartBundle</a> — FAA Sectional Charts',
-    maxZoom: 11, tms: true,
+  sectional: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    subdomains: 'abc',
+    maxZoom: 17,
   }),
   satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     attribution: '&copy; <a href="https://www.esri.com/">Esri</a>',
