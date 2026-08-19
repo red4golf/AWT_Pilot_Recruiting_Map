@@ -190,6 +190,7 @@
     .filter-btn.active { background: var(--gold); color: var(--sky); border-color: var(--gold); font-weight: 600; }
     .filter-btn.active.i5  { background: var(--teal); border-color: var(--teal); }
     .filter-btn.active.i90 { background: #a78bfa; border-color: #a78bfa; }
+    .filter-btn.active.gap { background: #ff8c42; border-color: #ff8c42; }
 
     /* Airport list */
     #airport-list {
@@ -376,6 +377,7 @@
 
     .cor-i5  { color: var(--teal); }
     .cor-i90 { color: #a78bfa; }
+    .cor-gap { color: #ff8c42; }
     .cor-both { color: var(--gold); }
 
     /* Custom markers */
@@ -542,7 +544,7 @@
     </div>
     <div class="header-stats">
       <div class="stat">
-        <span class="stat-value" id="stat-total">20</span>
+        <span class="stat-value" id="stat-total">25</span>
         <span class="stat-label">Airports</span>
       </div>
       <div class="stat">
@@ -550,11 +552,11 @@
         <span class="stat-label">Top Priority</span>
       </div>
       <div class="stat">
-        <span class="stat-value">5</span>
+        <span class="stat-value">6</span>
         <span class="stat-label">States</span>
       </div>
       <div class="stat">
-        <span class="stat-value">1,400<span style="font-size:14px">mi</span></span>
+        <span class="stat-value">1,900<span style="font-size:14px">mi</span></span>
         <span class="stat-label">Coverage</span>
       </div>
     </div>
@@ -569,6 +571,7 @@
         <button class="filter-btn active" data-filter="all">All</button>
         <button class="filter-btn i5" data-filter="i5">I-5 Corridor</button>
         <button class="filter-btn i90" data-filter="i90">I-90 / East</button>
+        <button class="filter-btn gap" data-filter="gap">Gap Corridors</button>
         <button class="filter-btn" data-filter="top">Top Priority</button>
       </div>
     </div>
@@ -603,8 +606,8 @@
 <!-- ABOUT PANEL -->
 <div id="about-panel">
   <div class="about-title">About AWT</div>
-  <strong>Angels Wings Transport</strong> provides free flights for military members, veterans, wounded warriors, medical patients, and animal rescues across WA, OR, CA, ID, and MT.<br/><br/>
-  This map shows GA airports along the I-5 and I-90 corridors targeted for pilot volunteer recruitment.<br/><br/>
+  <strong>Angels Wings Transport</strong> provides free flights for military members, veterans, wounded warriors, medical patients, and animal rescues across WA, OR, CA, ID, MT, and NV.<br/><br/>
+  This map shows GA airports along the I-5 and I-90 corridors — plus gap-corridor airports that plug documented Pilots n Paws missed-mission relays — targeted for pilot volunteer recruitment.<br/><br/>
   <a href="https://awtrescue.org" target="_blank">awtrescue.org</a>
 </div>
 
@@ -650,6 +653,12 @@ const airports = [
   { id:"PDT", name:"Pendleton Airport",         loc:"Pendleton, OR",  lat:45.6895, lng:-118.8394, priority:"medium", corridor:"i90", eaa:"Eastern OR / links WA–ID", notes:"I-84 eastern Oregon. Links Washington and Idaho corridors. Underserved area with strong veteran mission potential." },
   { id:"BOI", name:"Boise Airport",             loc:"Boise, ID",      lat:43.5609, lng:-116.2175, priority:"top",    corridor:"i90", eaa:"EAA Ch. 517",  notes:"I-84 Idaho anchor. Large GA community. EAA Chapter 517 is active. Eastern boundary of AWT service area." },
   { id:"MSO", name:"Missoula Airport",          loc:"Missoula, MT",   lat:46.9188, lng:-114.0836, priority:"high",   corridor:"i90", eaa:"University of Montana aviation culture", notes:"Montana anchor. University of Montana town with active outdoors and aviation culture. Northern Montana boundary for AWT." },
+  // ─── GAP CORRIDORS ── target airports plugging documented Pilots n Paws missed-mission relays
+  { id:"RTS", name:"Reno-Stead Airport",        loc:"Reno, NV",        lat:39.6674, lng:-119.8757, priority:"high",   corridor:"gap", eaa:"Deep GA community", notes:"Reno→Seattle gap (PnP, Jul 2025): pilots offered both halves 11 days apart, nobody joined — it went by ground. ~497 nm, 2 legs. AWT owns this corridor; Reno-Stead has a deep GA base." },
+  { id:"SUN", name:"Friedman Memorial Airport", loc:"Hailey, ID",      lat:43.5044, lng:-114.2965, priority:"high",   corridor:"gap", eaa:"Sun Valley pilots", notes:"Hailey→Roseburg gap (PnP, May 2025): a Paine Field pilot offered in 40 minutes, the thread went silent and expired. Never flown. ~396 nm, 1 leg — the cleanest miss in the set." },
+  { id:"LOL", name:"Derby Field (Lovelock)",    loc:"Lovelock, NV",    lat:40.0664, lng:-118.5655, priority:"medium", corridor:"gap", eaa:"Great Basin relay point", notes:"SF→Boise gap (PnP, Jul 2025): the Lovelock handoff AWT would own on the 400–600 nm relay leg. Nine days of coordination killed by 100°F heat, a TFR, smoke, and missed notifications. ~454 nm, 3 legs." },
+  { id:"PTV", name:"Porterville Municipal",     loc:"Porterville, CA", lat:36.0296, lng:-119.0629, priority:"high",   corridor:"gap", eaa:"Central Valley GA", notes:"Porterville→Vancouver WA gap (PnP, flown Jan 2025 after a 6-day chase): the 195 nm closing leg into Pearson (VUO) is AWT's exact corridor. ~598 nm, 2 aircraft." },
+  { id:"F70", name:"French Valley Airport",     loc:"Murrieta, CA",    lat:33.5742, lng:-117.1279, priority:"medium", corridor:"gap", eaa:"SoCal GA community", notes:"Menifee→Seattle gap (PnP, Jun 2025): zero replies in 30 days. ~867 nm — AWT can't fly it all, but nobody owned the northern third. Nearest GA field to Menifee." },
 ];
 
 // ─── PRIORITY CONFIG ─────────────────────────────────────────────────────────
@@ -748,6 +757,7 @@ function createIcon(priority) {
 function corridorLabel(corridor) {
   if (corridor === 'i5')  return '<span class="cor-i5">▲ I-5 Corridor</span>';
   if (corridor === 'i90') return '<span class="cor-i90">▶ I-90 / Eastern</span>';
+  if (corridor === 'gap') return '<span class="cor-gap">★ Gap Corridor</span>';
   return '<span class="cor-both">◆ Both Corridors</span>';
 }
 
@@ -787,6 +797,8 @@ function buildList() {
   i5Section.innerHTML = '<div class="list-section-label">I-5 Corridor</div>';
   const i90Section = document.createElement('div');
   i90Section.innerHTML = '<div class="list-section-label">I-90 / Eastern</div>';
+  const gapSection = document.createElement('div');
+  gapSection.innerHTML = '<div class="list-section-label">Gap Corridors</div>';
 
   airports.forEach(a => {
     const cfg = priorityConfig[a.priority];
@@ -810,11 +822,13 @@ function buildList() {
       showInfoPanel(a);
     });
     if (a.corridor === 'i5') i5Section.appendChild(el);
-    else i90Section.appendChild(el);
+    else if (a.corridor === 'i90') i90Section.appendChild(el);
+    else gapSection.appendChild(el);
   });
 
   listEl.appendChild(i5Section);
   listEl.appendChild(i90Section);
+  listEl.appendChild(gapSection);
 }
 
 buildList();
@@ -859,6 +873,7 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
       if (filter === 'all')  show = true;
       else if (filter === 'i5')  show = el.dataset.corridor === 'i5';
       else if (filter === 'i90') show = el.dataset.corridor === 'i90';
+      else if (filter === 'gap') show = el.dataset.corridor === 'gap';
       else if (filter === 'top') show = el.dataset.priority === 'top';
 
       el.classList.toggle('hidden', !show);
