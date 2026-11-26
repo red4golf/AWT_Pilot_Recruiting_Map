@@ -65,28 +65,16 @@
       gap: 14px;
     }
 
-    .logo-wing {
-      width: 38px;
-      height: 38px;
-      animation: soar 6s ease-in-out infinite;
-    }
-
-    @keyframes soar {
-      0%, 100% { transform: translateY(0) rotate(-2deg); }
-      50%       { transform: translateY(-4px) rotate(2deg); }
+    .logo {
+      width: 142px;
+      height: auto;
+      filter: brightness(0) invert(1);
     }
 
     .brand {
       display: flex;
       flex-direction: column;
       line-height: 1;
-    }
-
-    .brand-name {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 22px;
-      letter-spacing: 2px;
-      color: var(--white);
     }
 
     .brand-sub {
@@ -288,7 +276,15 @@
     }
 
     /* ─── MAP ─────────────────────────────────────────────── */
+    #map-area {
+      position: relative;
+      min-height: 0;
+      min-width: 0;
+      overflow: hidden;
+    }
+
     #map {
+      height: 100%;
       position: relative;
       z-index: 1;
     }
@@ -510,18 +506,100 @@
       margin-bottom: 8px;
     }
 
+    /* ─── PANEL CONTROLS ──────────────────────────────────── */
+    .close-btn {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      width: 32px;
+      height: 32px;
+      background: transparent;
+      border: none;
+      color: var(--cloud-dim);
+      font-size: 22px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .close-btn:hover { color: var(--white); }
+
+    #about-open, #list-open {
+      position: absolute;
+      z-index: 900;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 8px 12px;
+      background: var(--panel-bg);
+      color: var(--gold);
+      border: 1px solid var(--gold-dim);
+      border-radius: 3px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+      cursor: pointer;
+    }
+    #about-open { top: 14px; right: 14px; display: none; }
+    .about-closed #about-open { display: block; }
+    .about-closed #about-panel { display: none; }
+    #list-open, #list-close { display: none; }
+
     /* ─── RESPONSIVE ──────────────────────────────────────── */
     @media (max-width: 768px) {
       #app {
-        grid-template-rows: 56px 1fr;
-        grid-template-columns: 1fr;
+        grid-template-rows: auto minmax(0, 1fr);
+        grid-template-columns: minmax(0, 1fr);
+        height: 100vh;
+        height: 100dvh;
       }
 
+      header {
+        grid-column: 1;
+        flex-wrap: wrap;
+        row-gap: 8px;
+        padding: 8px 12px;
+      }
+      .header-left { gap: 8px; flex: 1; min-width: 0; }
+      .logo { width: 103px; flex-shrink: 0; }
+      .brand-sub { font-size: 9px; letter-spacing: 1.5px; }
+      .header-link { padding: 8px 10px; white-space: nowrap; margin-left: 8px; }
+      .header-stats { order: 3; width: 100%; justify-content: space-between; gap: 8px; }
+      .stat-value { font-size: 18px; }
+      .stat-label { font-size: 8px; letter-spacing: 1px; }
+
+      /* Airport directory becomes a bottom sheet */
       #sidebar {
-        display: none;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 70vh;
+        height: 70dvh;
+        z-index: 1100;
+        border-right: none;
+        border-top: 1px solid var(--gold-dim);
+        transform: translateY(100%);
+        visibility: hidden;
+        transition: transform 0.25s, visibility 0.25s;
       }
+      #sidebar.open { transform: translateY(0); visibility: visible; }
+      #list-close { display: block; }
+      .filter-btn { padding: 8px 10px; }
 
-      .header-stats { display: none; }
+      #list-open {
+        display: block;
+        left: 50%;
+        bottom: 28px;
+        transform: translateX(-50%);
+        white-space: nowrap;
+      }
+      .leaflet-bottom.leaflet-left { bottom: 56px; }
+
+      #map-toggle { top: 10px; left: 10px; }
+      .toggle-btn { padding: 8px 6px; font-size: 9px; letter-spacing: 0; }
+      #about-open { top: 10px; right: 10px; padding: 8px; }
+      #about-panel { top: 56px; right: 10px; left: 10px; max-width: none; max-height: calc(100% - 66px); overflow-y: auto; }
+
+      /* The popup already shows these details on small screens */
+      #info-panel { display: none; }
     }
   </style>
 </head>
@@ -532,13 +610,8 @@
   <!-- HEADER -->
   <header>
     <div class="header-left">
-      <svg class="logo-wing" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M4 22 C8 10, 20 6, 34 14 L20 18 Z" fill="#f0b429" opacity="0.9"/>
-        <path d="M4 22 C10 24, 16 26, 20 18 L14 28 Z" fill="#f0b429" opacity="0.6"/>
-        <circle cx="6" cy="23" r="2" fill="#f0b429"/>
-      </svg>
+      <img class="logo" src="logo.png" alt="Angels Wings" width="193" height="60">
       <div class="brand">
-        <span class="brand-name">Angels Wings Transport</span>
         <span class="brand-sub">Pilot Recruitment Map</span>
       </div>
     </div>
@@ -560,12 +633,13 @@
         <span class="stat-label">Coverage</span>
       </div>
     </div>
-    <a href="https://awtrescue.org/Info_For_Pilots_-_Angels_Wings_Transport.html" target="_blank" class="header-link">✈ Pilot Info</a>
+    <a href="https://www.awtrescue.org/info-for-pilots/" target="_blank" class="header-link">✈ Pilot Info</a>
   </header>
 
   <!-- SIDEBAR -->
   <aside id="sidebar">
     <div class="sidebar-header">
+      <button id="list-close" class="close-btn" type="button" aria-label="Close airport list">×</button>
       <div class="sidebar-title">Airport Directory</div>
       <div class="filters">
         <button class="filter-btn active" data-filter="all">All</button>
@@ -587,31 +661,56 @@
   </aside>
 
   <!-- MAP -->
-  <div id="map">
-    <div id="map-toggle">
-      <button class="toggle-btn active" data-style="dark">🌙 Dark</button>
-      <button class="toggle-btn" data-style="sectional">🏔 Topo</button>
-      <button class="toggle-btn" data-style="satellite">🛰 Satellite</button>
+  <main id="map-area">
+    <div id="map">
+      <div id="map-toggle">
+        <button class="toggle-btn active" data-style="dark">🌙 Dark</button>
+        <button class="toggle-btn" data-style="sectional">🏔 Topo</button>
+        <button class="toggle-btn" data-style="satellite">🛰 Satellite</button>
+      </div>
     </div>
-  </div>
 
-</div>
+    <!-- INFO PANEL -->
+    <div id="info-panel">
+      <div class="info-title">Selected Airport</div>
+      <div id="info-content"></div>
+    </div>
 
-<!-- INFO PANEL -->
-<div id="info-panel">
-  <div class="info-title">Selected Airport</div>
-  <div id="info-content"></div>
-</div>
-
-<!-- ABOUT PANEL -->
-<div id="about-panel">
+    <!-- ABOUT PANEL -->
+    <button id="about-open" type="button">ⓘ About</button>
+    <div id="about-panel">
+      <button id="about-close" class="close-btn" type="button" aria-label="Close About">×</button>
   <div class="about-title">About AWT</div>
-  <strong>Angels Wings Transport</strong> provides free flights for military members, veterans, wounded warriors, medical patients, and animal rescues across WA, OR, CA, ID, MT, and NV.<br/><br/>
+  <strong>Angels Wings Transport</strong> provides free flights for rescue animals across WA, OR, CA, ID, MT, and NV.<br/><br/>
   This map shows GA airports along the I-5 and I-90 corridors — plus gap-corridor airports that plug documented Pilots n Paws missed-mission relays — targeted for pilot volunteer recruitment.<br/><br/>
   <a href="https://awtrescue.org" target="_blank">awtrescue.org</a>
 </div>
 
+    <button id="list-open" type="button">☰ Airports &amp; Filters</button>
+  </main>
+
+</div>
+
 <script>
+// ─── PANELS ──────────────────────────────────────────────────────────────────
+const smallScreen = window.matchMedia('(max-width: 768px)');
+const sidebar = document.getElementById('sidebar');
+
+function setAbout(open) {
+  document.getElementById('map-area').classList.toggle('about-closed', !open);
+}
+document.getElementById('about-close').addEventListener('click', () => setAbout(false));
+document.getElementById('about-open').addEventListener('click', () => {
+  sidebar.classList.remove('open');
+  setAbout(true);
+});
+document.getElementById('list-open').addEventListener('click', () => {
+  setAbout(false);
+  sidebar.classList.add('open');
+});
+document.getElementById('list-close').addEventListener('click', () => sidebar.classList.remove('open'));
+setAbout(!smallScreen.matches);
+
 function loadScript(src, onload) {
   const s = document.createElement('script');
   s.src = src;
@@ -649,8 +748,8 @@ const airports = [
   // I-90 / EASTERN
   { id:"SFF", name:"Felts Field",               loc:"Spokane, WA",    lat:47.6806, lng:-117.3198, priority:"top",    corridor:"i90", eaa:"Very active EAA chapter", notes:"I-90 eastern anchor. Primary GA field for Spokane area. Very active EAA chapter. Critical hub for all eastern WA missions." },
   { id:"YKM", name:"Yakima Air Terminal",       loc:"Yakima, WA",     lat:46.5675, lng:-120.5392, priority:"medium", corridor:"i90", eaa:"Agricultural interior",  notes:"I-82/I-90 junction. Covers agricultural interior and links east-west missions across the Cascades." },
-  { id:"ALW", name:"Walla Walla Regional",      loc:"Walla Walla, WA",lat:46.0873, lng:-118.2845, priority:"medium", corridor:"i90", eaa:"Eastern WA rural coverage", notes:"I-82 eastern Washington. Large rural coverage area. Ideal for eastern WA veteran transport missions." },
-  { id:"PDT", name:"Pendleton Airport",         loc:"Pendleton, OR",  lat:45.6895, lng:-118.8394, priority:"medium", corridor:"i90", eaa:"Eastern OR / links WA–ID", notes:"I-84 eastern Oregon. Links Washington and Idaho corridors. Underserved area with strong veteran mission potential." },
+  { id:"ALW", name:"Walla Walla Regional",      loc:"Walla Walla, WA",lat:46.0873, lng:-118.2845, priority:"medium", corridor:"i90", eaa:"Eastern WA rural coverage", notes:"I-82 eastern Washington. Large rural coverage area." },
+  { id:"PDT", name:"Pendleton Airport",         loc:"Pendleton, OR",  lat:45.6895, lng:-118.8394, priority:"medium", corridor:"i90", eaa:"Eastern OR / links WA–ID", notes:"I-84 eastern Oregon. Links Washington and Idaho corridors. Underserved area." },
   { id:"BOI", name:"Boise Airport",             loc:"Boise, ID",      lat:43.5609, lng:-116.2175, priority:"top",    corridor:"i90", eaa:"EAA Ch. 517",  notes:"I-84 Idaho anchor. Large GA community. EAA Chapter 517 is active. Eastern boundary of AWT service area." },
   { id:"MSO", name:"Missoula Airport",          loc:"Missoula, MT",   lat:46.9188, lng:-114.0836, priority:"high",   corridor:"i90", eaa:"University of Montana aviation culture", notes:"Montana anchor. University of Montana town with active outdoors and aviation culture. Northern Montana boundary for AWT." },
   // ─── GAP CORRIDORS ── target airports plugging documented Pilots n Paws missed-mission relays
@@ -681,10 +780,11 @@ L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
 // ─── TILE LAYERS ─────────────────────────────────────────────────────────────
 const tileLayers = {
-  dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-    subdomains: 'abcd', maxZoom: 19,
-  }),
+  dark: L.layerGroup(['Base', 'Reference'].map(kind => L.tileLayer(
+    `https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_${kind}/MapServer/tile/{z}/{y}/{x}`, {
+    attribution: '&copy; <a href="https://www.esri.com/">Esri</a>',
+    maxNativeZoom: 16, maxZoom: 19,
+  }))),
   sectional: L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     subdomains: 'abc',
@@ -705,7 +805,7 @@ const osmFallback = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 let currentStyle = 'dark';
 tileLayers.dark.addTo(map);
 
-tileLayers.dark.on('tileerror', function() {
+tileLayers.dark.getLayers()[0].on('tileerror', function() {
   if (currentStyle === 'dark' && map.hasLayer(tileLayers.dark)) {
     map.removeLayer(tileLayers.dark);
     osmFallback.addTo(map);
@@ -816,7 +916,8 @@ function buildList() {
       <span class="item-badge ${cfg.badgeClass}">${cfg.label}</span>
     `;
     el.addEventListener('click', () => {
-      map.setView([a.lat, a.lng], 10, { animate: true });
+      sidebar.classList.remove('open');
+      map.setView([a.lat, a.lng], 10, { animate: !smallScreen.matches });
       markerMap[a.id].openPopup();
       selectAirport(a.id);
       showInfoPanel(a);
