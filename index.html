@@ -221,9 +221,21 @@
       flex-shrink: 0;
     }
 
-    .dot-top    { background: var(--red); box-shadow: 0 0 6px var(--red); }
-    .dot-high   { background: var(--gold); }
-    .dot-medium { background: var(--teal); }
+    .dot-i5     { background: var(--teal); }
+    .dot-i90    { background: #a78bfa; }
+    .dot-gap    { background: #ff8c42; }
+    .dot-pilot  { background: var(--white); border: 2px solid var(--gold); }
+    .pilot-badge {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--white);
+      color: var(--sky);
+      border: 3px solid var(--gold);
+      font: 700 12px/18px 'DM Sans', sans-serif;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    }
     .dot-home   { background: var(--green); box-shadow: 0 0 6px var(--green); }
 
     .item-info { flex: 1; min-width: 0; }
@@ -252,9 +264,6 @@
       flex-shrink: 0;
     }
 
-    .badge-top    { background: rgba(230,57,70,0.2); color: var(--red); border: 1px solid rgba(230,57,70,0.4); }
-    .badge-high   { background: rgba(240,180,41,0.15); color: var(--gold); border: 1px solid rgba(240,180,41,0.3); }
-    .badge-medium { background: rgba(72,202,228,0.12); color: var(--teal); border: 1px solid rgba(72,202,228,0.25); }
     .badge-home   { background: rgba(46,204,113,0.15); color: var(--green); border: 1px solid rgba(46,204,113,0.3); }
 
     /* Legend */
@@ -342,7 +351,7 @@
       gap: 4px;
     }
 
-    .popup-priority {
+    .popup-home {
       font-family: 'DM Mono', monospace;
       font-size: 9px;
       letter-spacing: 1px;
@@ -398,9 +407,9 @@
       transform: rotate(45deg);
     }
 
-    .marker-top    { background: var(--red); }
-    .marker-high   { background: var(--gold); }
-    .marker-medium { background: var(--teal); }
+    .marker-i5     { background: var(--teal); }
+    .marker-i90    { background: #a78bfa; }
+    .marker-gap    { background: #ff8c42; }
     .marker-home   { background: var(--green); }
 
     /* ─── MAP STYLE TOGGLE ────────────────────────────────── */
@@ -612,25 +621,13 @@
     <div class="header-left">
       <img class="logo" src="logo.png" alt="Angels Wings" width="193" height="60">
       <div class="brand">
-        <span class="brand-sub">Pilot Recruitment Map</span>
+        <span class="brand-sub">Pilots welcome from any airport</span>
       </div>
     </div>
     <div class="header-stats">
       <div class="stat">
-        <span class="stat-value" id="stat-total">25</span>
-        <span class="stat-label">Airports</span>
-      </div>
-      <div class="stat">
-        <span class="stat-value" id="stat-top">4</span>
-        <span class="stat-label">Top Priority</span>
-      </div>
-      <div class="stat">
         <span class="stat-value">6</span>
         <span class="stat-label">States</span>
-      </div>
-      <div class="stat">
-        <span class="stat-value">1,900<span style="font-size:14px">mi</span></span>
-        <span class="stat-label">Coverage</span>
       </div>
     </div>
     <a href="https://www.awtrescue.org/info-for-pilots/" target="_blank" class="header-link">✈ Pilot Info</a>
@@ -640,23 +637,23 @@
   <aside id="sidebar">
     <div class="sidebar-header">
       <button id="list-close" class="close-btn" type="button" aria-label="Close airport list">×</button>
-      <div class="sidebar-title">Airport Directory</div>
+      <div class="sidebar-title">Example Airports</div>
       <div class="filters">
         <button class="filter-btn active" data-filter="all">All</button>
         <button class="filter-btn i5" data-filter="i5">I-5 Corridor</button>
         <button class="filter-btn i90" data-filter="i90">I-90 / East</button>
         <button class="filter-btn gap" data-filter="gap">Gap Corridors</button>
-        <button class="filter-btn" data-filter="top">Top Priority</button>
       </div>
     </div>
 
     <div id="airport-list"></div>
 
     <div class="legend">
-      <div class="legend-item"><span class="priority-dot dot-top"></span> Top Priority</div>
-      <div class="legend-item"><span class="priority-dot dot-high"></span> High</div>
-      <div class="legend-item"><span class="priority-dot dot-medium"></span> Medium</div>
+      <div class="legend-item"><span class="priority-dot dot-i5"></span> I-5</div>
+      <div class="legend-item"><span class="priority-dot dot-i90"></span> I-90 / East</div>
+      <div class="legend-item"><span class="priority-dot dot-gap"></span> Gap</div>
       <div class="legend-item"><span class="priority-dot dot-home"></span> Home Base</div>
+      <div class="legend-item" id="pilot-legend" hidden><span class="priority-dot dot-pilot"></span> Approved pilots (number)</div>
     </div>
   </aside>
 
@@ -682,7 +679,7 @@
       <button id="about-close" class="close-btn" type="button" aria-label="Close About">×</button>
   <div class="about-title">About AWT</div>
   <strong>Angels Wings Transport</strong> provides free flights for rescue animals across WA, OR, CA, ID, MT, and NV.<br/><br/>
-  This map shows GA airports along the I-5 and I-90 corridors — plus gap-corridor airports that plug documented Pilots n Paws missed-mission relays — targeted for pilot volunteer recruitment.<br/><br/>
+  <strong>Fly from any airport? We'd love to hear from you.</strong> The airports listed here are examples along the I-5, I-90 and gap corridors, not the only places we welcome pilots.<br/><br/>
   <a href="https://awtrescue.org" target="_blank">awtrescue.org</a>
 </div>
 
@@ -730,43 +727,40 @@ function initApp() {
 // ─── DATA ────────────────────────────────────────────────────────────────────
 const airports = [
   // I-5 CORRIDOR
-  { id:"BLI", name:"Bellingham International", loc:"Bellingham, WA", lat:48.7956, lng:-122.5331, priority:"high",   corridor:"i5",  eaa:"EAA Ch. 314",  notes:"I-5 northern anchor. Active pilot community close to Canadian border. EAA Chapter 314 meets here." },
-  { id:"PAE", name:"Paine Field",               loc:"Everett, WA",    lat:47.9081, lng:-122.2814, priority:"top",    corridor:"i5",  eaa:"EAA Ch. 189",  notes:"Largest GA hub in Washington. Multiple flight schools, EAA Chapter 189. Highest pilot density on the I-5 corridor." },
-  { id:"BFI", name:"Boeing Field",              loc:"Seattle, WA",    lat:47.5369, lng:-122.3039, priority:"high",   corridor:"i5",  eaa:"Museum of Flight", notes:"Seattle's primary GA airport. Museum of Flight on-site — excellent venue for outreach events and pilot community." },
-  { id:"RNT", name:"Renton Municipal",          loc:"Renton, WA",     lat:47.4856, lng:-122.2166, priority:"home",   corridor:"i5",  eaa:"AWT Home Base",  notes:"AWT home base. Already well-networked here. Boeing 737 production facility adjacent." },
-  { id:"OLM", name:"Olympia Regional",          loc:"Tumwater, WA",   lat:46.9747, lng:-122.8975, priority:"medium", corridor:"i5",  eaa:"Active airshow community", notes:"I-5 mid-Washington. Active airshow community. Covers mission gap between Seattle and Portland." },
-  { id:"CLS", name:"Chehalis-Centralia",        loc:"Chehalis, WA",   lat:46.6689, lng:-122.9841, priority:"medium", corridor:"i5",  eaa:"Young Eagles program", notes:"I-5 gap-filler between Olympia and Kelso. Young Eagles program suggests a receptive, community-minded pilot base." },
-  { id:"KLS", name:"SW Washington Regional",    loc:"Kelso, WA",      lat:46.1185, lng:-122.8964, priority:"medium", corridor:"i5",  eaa:"Civil Air Patrol",  notes:"I-5 south Washington. Civil Air Patrol presence on field. Covers the WA/OR border corridor effectively." },
-  { id:"VUO", name:"Pearson Field",             loc:"Vancouver, WA",  lat:45.6223, lng:-122.6559, priority:"high",   corridor:"i5",  eaa:"EAA Ch. 105",  notes:"Historic GA field, Portland metro north. Very active pilot lounge. EAA Chapter 105 meets nearby — strong recruitment target." },
-  { id:"HIO", name:"Hillsboro Airport",         loc:"Hillsboro, OR",  lat:45.5329, lng:-122.9480, priority:"top",    corridor:"i5",  eaa:"Hillsboro Aero Academy", notes:"Busiest GA airport in Oregon. Hillsboro Aero Academy produces hundreds of new pilots annually. Top Oregon priority." },
-  { id:"SLE", name:"Salem McNary Field",        loc:"Salem, OR",      lat:44.9093, lng:-123.0027, priority:"medium", corridor:"i5",  eaa:"Army National Guard",  notes:"I-5 mid-Oregon. Army National Guard presence. Active GA community covers the Salem–Eugene gap." },
-  { id:"EUG", name:"Mahlon Sweet Field",        loc:"Eugene, OR",     lat:44.1218, lng:-123.2159, priority:"high",   corridor:"i5",  eaa:"EAA Ch. 31 (Creswell)", notes:"I-5 southern Oregon anchor. University town with active pilot community. EAA Chapter 31 meets nearby at Creswell (77S)." },
-  { id:"RBG", name:"Roseburg Regional",         loc:"Roseburg, OR",   lat:43.2364, lng:-123.3580, priority:"medium", corridor:"i5",  eaa:"Flight school on field", notes:"Fills 100-mile I-5 gap between Eugene and Medford. Flight school on field makes this a practical recruitment stop." },
-  { id:"MFR", name:"Rogue Valley International",loc:"Medford, OR",    lat:42.3745, lng:-122.8739, priority:"high",   corridor:"i5",  eaa:"Active EAA chapter",  notes:"I-5 southern Oregon. Gateway to northern California. Active EAA chapter. Critical for OR/CA border missions." },
-  { id:"RDD", name:"Redding Regional",          loc:"Redding, CA",    lat:40.5058, lng:-122.2997, priority:"medium", corridor:"i5",  eaa:"Northern CA anchor",  notes:"I-5 California southern boundary of AWT service area. Pilots here cover northern California border missions." },
+  { id:"BLI", name:"Bellingham International", loc:"Bellingham, WA", lat:48.7956, lng:-122.5331, corridor:"i5",  notes:"Northern end of the I-5 group, near the Canadian border." },
+  { id:"PAE", name:"Paine Field",               loc:"Everett, WA",    lat:47.9081, lng:-122.2814, corridor:"i5",  notes:"Serves Everett and the north Puget Sound area." },
+  { id:"BFI", name:"Boeing Field",              loc:"Seattle, WA",    lat:47.5369, lng:-122.3039, corridor:"i5",  notes:"Serves Seattle." },
+  { id:"RNT", name:"Renton Municipal",          loc:"Renton, WA",     lat:47.4856, lng:-122.2166, home:true, corridor:"i5",  notes:"Angels Wings' home base." },
+  { id:"OLM", name:"Olympia Regional",          loc:"Tumwater, WA",   lat:46.9747, lng:-122.8975, corridor:"i5",  notes:"Serves the Olympia area in the south Puget Sound." },
+  { id:"CLS", name:"Chehalis-Centralia",        loc:"Chehalis, WA",   lat:46.6689, lng:-122.9841, corridor:"i5",  notes:"Southwest Washington, between Olympia and Kelso." },
+  { id:"KLS", name:"SW Washington Regional",    loc:"Kelso, WA",      lat:46.1185, lng:-122.8964, corridor:"i5",  notes:"Southwest Washington, north of Portland." },
+  { id:"VUO", name:"Pearson Field",             loc:"Vancouver, WA",  lat:45.6223, lng:-122.6559, corridor:"i5",  notes:"In Vancouver, Washington, across the river from Portland." },
+  { id:"HIO", name:"Hillsboro Airport",         loc:"Hillsboro, OR",  lat:45.5329, lng:-122.9480, corridor:"i5",  notes:"West of Portland, Oregon." },
+  { id:"SLE", name:"Salem McNary Field",        loc:"Salem, OR",      lat:44.9093, lng:-123.0027, corridor:"i5",  notes:"Serves Salem and Oregon's mid-Willamette Valley." },
+  { id:"EUG", name:"Mahlon Sweet Field",        loc:"Eugene, OR",     lat:44.1218, lng:-123.2159, corridor:"i5",  notes:"Serves Eugene and the southern Willamette Valley." },
+  { id:"RBG", name:"Roseburg Regional",         loc:"Roseburg, OR",   lat:43.2364, lng:-123.3580, corridor:"i5",  notes:"Southern Oregon, between Eugene and Medford." },
+  { id:"MFR", name:"Rogue Valley International",loc:"Medford, OR",    lat:42.3745, lng:-122.8739, corridor:"i5",  notes:"Southern Oregon, near the California border." },
+  { id:"RDD", name:"Redding Regional",          loc:"Redding, CA",    lat:40.5058, lng:-122.2997, corridor:"i5",  notes:"Serves Redding and far northern California." },
 
   // I-90 / EASTERN
-  { id:"SFF", name:"Felts Field",               loc:"Spokane, WA",    lat:47.6806, lng:-117.3198, priority:"top",    corridor:"i90", eaa:"Very active EAA chapter", notes:"I-90 eastern anchor. Primary GA field for Spokane area. Very active EAA chapter. Critical hub for all eastern WA missions." },
-  { id:"YKM", name:"Yakima Air Terminal",       loc:"Yakima, WA",     lat:46.5675, lng:-120.5392, priority:"medium", corridor:"i90", eaa:"Agricultural interior",  notes:"I-82/I-90 junction. Covers agricultural interior and links east-west missions across the Cascades." },
-  { id:"ALW", name:"Walla Walla Regional",      loc:"Walla Walla, WA",lat:46.0873, lng:-118.2845, priority:"medium", corridor:"i90", eaa:"Eastern WA rural coverage", notes:"I-82 eastern Washington. Large rural coverage area." },
-  { id:"PDT", name:"Pendleton Airport",         loc:"Pendleton, OR",  lat:45.6895, lng:-118.8394, priority:"medium", corridor:"i90", eaa:"Eastern OR / links WA–ID", notes:"I-84 eastern Oregon. Links Washington and Idaho corridors. Underserved area." },
-  { id:"BOI", name:"Boise Airport",             loc:"Boise, ID",      lat:43.5609, lng:-116.2175, priority:"top",    corridor:"i90", eaa:"EAA Ch. 517",  notes:"I-84 Idaho anchor. Large GA community. EAA Chapter 517 is active. Eastern boundary of AWT service area." },
-  { id:"MSO", name:"Missoula Airport",          loc:"Missoula, MT",   lat:46.9188, lng:-114.0836, priority:"high",   corridor:"i90", eaa:"University of Montana aviation culture", notes:"Montana anchor. University of Montana town with active outdoors and aviation culture. Northern Montana boundary for AWT." },
-  // ─── GAP CORRIDORS ── target airports plugging documented Pilots n Paws missed-mission relays
-  { id:"RTS", name:"Reno-Stead Airport",        loc:"Reno, NV",        lat:39.6674, lng:-119.8757, priority:"high",   corridor:"gap", eaa:"Deep GA community", notes:"Reno→Seattle gap (PnP, Jul 2025): pilots offered both halves 11 days apart, nobody joined — it went by ground. ~497 nm, 2 legs. AWT owns this corridor; Reno-Stead has a deep GA base." },
-  { id:"SUN", name:"Friedman Memorial Airport", loc:"Hailey, ID",      lat:43.5044, lng:-114.2965, priority:"high",   corridor:"gap", eaa:"Sun Valley pilots", notes:"Hailey→Roseburg gap (PnP, May 2025): a Paine Field pilot offered in 40 minutes, the thread went silent and expired. Never flown. ~396 nm, 1 leg — the cleanest miss in the set." },
-  { id:"LOL", name:"Derby Field (Lovelock)",    loc:"Lovelock, NV",    lat:40.0664, lng:-118.5655, priority:"medium", corridor:"gap", eaa:"Great Basin relay point", notes:"SF→Boise gap (PnP, Jul 2025): the Lovelock handoff AWT would own on the 400–600 nm relay leg. Nine days of coordination killed by 100°F heat, a TFR, smoke, and missed notifications. ~454 nm, 3 legs." },
-  { id:"PTV", name:"Porterville Municipal",     loc:"Porterville, CA", lat:36.0296, lng:-119.0629, priority:"high",   corridor:"gap", eaa:"Central Valley GA", notes:"Porterville→Vancouver WA gap (PnP, flown Jan 2025 after a 6-day chase): the 195 nm closing leg into Pearson (VUO) is AWT's exact corridor. ~598 nm, 2 aircraft." },
-  { id:"F70", name:"French Valley Airport",     loc:"Murrieta, CA",    lat:33.5742, lng:-117.1279, priority:"medium", corridor:"gap", eaa:"SoCal GA community", notes:"Menifee→Seattle gap (PnP, Jun 2025): zero replies in 30 days. ~867 nm — AWT can't fly it all, but nobody owned the northern third. Nearest GA field to Menifee." },
+  { id:"SFF", name:"Felts Field",               loc:"Spokane, WA",    lat:47.6806, lng:-117.3198, corridor:"i90", notes:"Serves Spokane and eastern Washington." },
+  { id:"YKM", name:"Yakima Air Terminal",       loc:"Yakima, WA",     lat:46.5675, lng:-120.5392, corridor:"i90", notes:"Central Washington, east of the Cascades." },
+  { id:"ALW", name:"Walla Walla Regional",      loc:"Walla Walla, WA",lat:46.0873, lng:-118.2845, corridor:"i90", notes:"Southeast Washington." },
+  { id:"PDT", name:"Pendleton Airport",         loc:"Pendleton, OR",  lat:45.6895, lng:-118.8394, corridor:"i90", notes:"Northeast Oregon." },
+  { id:"BOI", name:"Boise Airport",             loc:"Boise, ID",      lat:43.5609, lng:-116.2175, corridor:"i90", notes:"Serves Boise and southwest Idaho." },
+  { id:"MSO", name:"Missoula Airport",          loc:"Missoula, MT",   lat:46.9188, lng:-114.0836, corridor:"i90", notes:"Serves Missoula and western Montana." },
+  // ─── GAP CORRIDORS
+  { id:"RTS", name:"Reno-Stead Airport",        loc:"Reno, NV",        lat:39.6674, lng:-119.8757, corridor:"gap", notes:"North of Reno, Nevada." },
+  { id:"SUN", name:"Friedman Memorial Airport", loc:"Hailey, ID",      lat:43.5044, lng:-114.2965, corridor:"gap", notes:"Serves Hailey and the Wood River Valley in central Idaho." },
+  { id:"LOL", name:"Derby Field (Lovelock)",    loc:"Lovelock, NV",    lat:40.0664, lng:-118.5655, corridor:"gap", notes:"Northern Nevada, a possible handoff point on longer routes." },
+  { id:"PTV", name:"Porterville Municipal",     loc:"Porterville, CA", lat:36.0296, lng:-119.0629, corridor:"gap", notes:"In California's Central Valley." },
+  { id:"F70", name:"French Valley Airport",     loc:"Murrieta, CA",    lat:33.5742, lng:-117.1279, corridor:"gap", notes:"Southern California, in the Murrieta area." },
 ];
 
-// ─── PRIORITY CONFIG ─────────────────────────────────────────────────────────
-const priorityConfig = {
-  top:    { label: "TOP PRIORITY", color: "#e63946", dotClass: "dot-top",    badgeClass: "badge-top",    markerClass: "marker-top"    },
-  high:   { label: "HIGH",         color: "#f0b429", dotClass: "dot-high",   badgeClass: "badge-high",   markerClass: "marker-high"   },
-  medium: { label: "MEDIUM",       color: "#48cae4", dotClass: "dot-medium", badgeClass: "badge-medium", markerClass: "marker-medium" },
-  home:   { label: "HOME BASE",    color: "#2ecc71", dotClass: "dot-home",   badgeClass: "badge-home",   markerClass: "marker-home"   },
-};
+// Marker and list colors: home base, otherwise the corridor.
+const colorKey = a => a.home ? 'home' : a.corridor;
+const corridorNames = { i5: 'I-5', i90: 'I-90 / Eastern', gap: 'Gap Corridor' };
+const homeBadge = (a, cls) => a.home ? `<span class="${cls} badge-home">HOME BASE</span>` : '';
 
 // ─── MAP INIT ────────────────────────────────────────────────────────────────
 const map = L.map('map', {
@@ -843,11 +837,10 @@ L.polyline(i90Coords, { color: '#a78bfa', weight: 1.5, opacity: 0.3, dashArray: 
 const markerMap = {};
 let activeItem = null;
 
-function createIcon(priority) {
-  const cfg = priorityConfig[priority];
+function createIcon(key) {
   return L.divIcon({
     className: '',
-    html: `<div class="marker-pin ${cfg.markerClass}"><div class="marker-inner"></div></div>`,
+    html: `<div class="marker-pin marker-${key}"><div class="marker-inner"></div></div>`,
     iconSize: [20, 20],
     iconAnchor: [10, 20],
     popupAnchor: [0, -22],
@@ -862,8 +855,7 @@ function corridorLabel(corridor) {
 }
 
 airports.forEach(a => {
-  const cfg = priorityConfig[a.priority];
-  const marker = L.marker([a.lat, a.lng], { icon: createIcon(a.priority) });
+  const marker = L.marker([a.lat, a.lng], { icon: createIcon(colorKey(a)) });
 
   const popupHTML = `
     <div class="popup-header">
@@ -871,9 +863,9 @@ airports.forEach(a => {
       <div class="popup-id">${a.id}</div>
     </div>
     <div class="popup-loc">📍 ${a.loc}</div>
-    <div class="popup-priority ${cfg.badgeClass}">${cfg.label}</div>
+    ${homeBadge(a, 'popup-home')}
     <div class="popup-notes">${a.notes}</div>
-    <div class="popup-corridor">${corridorLabel(a.corridor)} &nbsp;·&nbsp; ${a.eaa}</div>
+    <div class="popup-corridor">${corridorLabel(a.corridor)}</div>
   `;
 
   marker.bindPopup(popupHTML, { maxWidth: 280 });
@@ -886,6 +878,43 @@ airports.forEach(a => {
   marker.addTo(map);
   markerMap[a.id] = marker;
 });
+
+// ─── ANONYMOUS PILOT MARKERS ─────────────────────────────────────────────────
+// Counts per home airport from the pilot app. The app is not deployed yet, so
+// this is switched on only for local testing. Set the live address after launch.
+const PILOT_FEED = ['localhost', '127.0.0.1'].includes(location.hostname)
+  ? 'http://localhost:8792/api/public/fields' : '';
+
+function showPilots(fields) {
+  fields.forEach(f => {
+    const count = Number(f.pilots);
+    const label = `${count} approved ${count === 1 ? 'pilot' : 'pilots'} at ${f.code}`;
+    // Built as text nodes so feed values are never treated as HTML.
+    const popup = document.createElement('div');
+    [['popup-name', f.code], ['popup-loc', f.name], ['popup-notes', label]].forEach(([cls, value]) => {
+      const line = document.createElement('div');
+      line.className = cls;
+      line.textContent = value;
+      popup.appendChild(line);
+    });
+    // Sits up and to the right, so an airport pin underneath stays clickable.
+    L.marker([f.lat, f.lon], {
+      title: label,
+      alt: label,
+      zIndexOffset: 1000,
+      icon: L.divIcon({ className: '', html: `<div class="pilot-badge">${count}</div>`,
+        iconSize: [24, 24], iconAnchor: [-2, 30], popupAnchor: [14, -32] }),
+    }).bindPopup(popup, { maxWidth: 280 }).addTo(map);
+  });
+  document.getElementById('pilot-legend').hidden = !fields.length;
+}
+
+if (PILOT_FEED) {
+  fetch(PILOT_FEED)
+    .then(response => response.ok ? response.json() : Promise.reject(response.status))
+    .then(data => showPilots(data.fields))
+    .catch(() => { /* The map works without pilot markers. */ });
+}
 
 // ─── SIDEBAR LIST ─────────────────────────────────────────────────────────────
 const listEl = document.getElementById('airport-list');
@@ -901,19 +930,17 @@ function buildList() {
   gapSection.innerHTML = '<div class="list-section-label">Gap Corridors</div>';
 
   airports.forEach(a => {
-    const cfg = priorityConfig[a.priority];
     const el = document.createElement('div');
     el.className = 'airport-item';
     el.dataset.id = a.id;
     el.dataset.corridor = a.corridor;
-    el.dataset.priority = a.priority;
     el.innerHTML = `
-      <span class="priority-dot ${cfg.dotClass}"></span>
+      <span class="priority-dot dot-${colorKey(a)}"></span>
       <div class="item-info">
         <div class="item-name">${a.name} (${a.id})</div>
         <div class="item-loc">${a.loc}</div>
       </div>
-      <span class="item-badge ${cfg.badgeClass}">${cfg.label}</span>
+      ${homeBadge(a, 'item-badge')}
     `;
     el.addEventListener('click', () => {
       sidebar.classList.remove('open');
@@ -947,15 +974,12 @@ function selectAirport(id) {
 
 // ─── INFO PANEL ───────────────────────────────────────────────────────────────
 function showInfoPanel(a) {
-  const cfg = priorityConfig[a.priority];
   const panel = document.getElementById('info-panel');
   document.getElementById('info-content').innerHTML = `
     <div class="info-row"><span class="info-key">Airport</span><span class="info-val">${a.name}</span></div>
     <div class="info-row"><span class="info-key">Identifier</span><span class="info-val">${a.id}</span></div>
     <div class="info-row"><span class="info-key">Location</span><span class="info-val">${a.loc}</span></div>
-    <div class="info-row"><span class="info-key">Priority</span><span class="info-val" style="color:${cfg.color}">${cfg.label}</span></div>
-    <div class="info-row"><span class="info-key">Corridor</span><span class="info-val">${a.corridor.toUpperCase()}</span></div>
-    <div class="info-row"><span class="info-key">Community</span><span class="info-val">${a.eaa}</span></div>
+    <div class="info-row"><span class="info-key">Corridor</span><span class="info-val">${corridorNames[a.corridor]}</span></div>
   `;
   panel.classList.add('visible');
 }
@@ -967,7 +991,6 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.classList.add('active');
 
     const filter = btn.dataset.filter;
-    let visibleCount = 0;
 
     document.querySelectorAll('.airport-item').forEach(el => {
       let show = false;
@@ -975,10 +998,8 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
       else if (filter === 'i5')  show = el.dataset.corridor === 'i5';
       else if (filter === 'i90') show = el.dataset.corridor === 'i90';
       else if (filter === 'gap') show = el.dataset.corridor === 'gap';
-      else if (filter === 'top') show = el.dataset.priority === 'top';
 
       el.classList.toggle('hidden', !show);
-      if (show) visibleCount++;
 
       // Show/hide markers
       const marker = markerMap[el.dataset.id];
@@ -988,8 +1009,6 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
         if (map.hasLayer(marker)) map.removeLayer(marker);
       }
     });
-
-    document.getElementById('stat-total').textContent = visibleCount;
 
     // Hide section labels if all items in section are hidden
     document.querySelectorAll('.list-section-label').forEach(label => {
